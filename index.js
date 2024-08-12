@@ -7,6 +7,7 @@ const FunctionContext = require('./Entities/FunctionContext');
 const lambda = require('./lambda/invokeHandler');
 const logger = require('./lib/logger');
 const requestLogger = require('./middlewares/log');
+const { ensureDirectoryExists } = require('./utils/files');
 
 const app = express();
 // Middleware to serve static files
@@ -24,11 +25,6 @@ const uploadDirectory = path.join(__dirname, 'uploads');
 
 const upload = multer({ dest: uploadDirectory });
 
-const ensureDirectoryExists = (dir) => {
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-    }
-};
 
 ensureDirectoryExists(functionDirectory);
 ensureDirectoryExists(uploadDirectory);
