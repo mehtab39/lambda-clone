@@ -6,6 +6,10 @@ const multer = require('multer');
 const { fork } = require('child_process');
 
 const app = express();
+// Middleware to serve static files
+app.use(express.static(path.join(__dirname, 'assets')));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(bodyParser.json());
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
