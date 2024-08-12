@@ -3,6 +3,47 @@
 
 <head>
     <%- include('partials/head', { title: "Serverless Functions" }) %>
+
+        <style>
+            #output {
+                border: 1px solid #ddd;
+                padding: 10px;
+                max-height: 400px;
+                overflow-y: auto;
+                background-color: #f9f9f9;
+                font-family: monospace;
+                white-space: pre-wrap;
+            }
+
+            #output p {
+                margin: 0;
+                padding: 2px;
+                font-size: 14px;
+            }
+
+            .type-warn {
+                color: #ff9800;
+                background-color: #fff3e0;
+                border-left: 3px solid #ff9800;
+                padding-left: 5px;
+            }
+
+            .type-error {
+                color: #f44336;
+                background-color: #ffebee;
+                border-left: 3px solid #f44336;
+                padding-left: 5px;
+            }
+
+            .type-info {
+                color: #2196f3;
+                background-color: #e3f2fd;
+                border-left: 3px solid #2196f3;
+                padding-left: 5px;
+            }
+        </style>
+
+
 </head>
 
 <body>
@@ -31,6 +72,8 @@
             <button onclick="sendCustomBody()">Send Request</button>
         </div>
 
+        <div id="output"></div>
+
         <script>
             async function invokeFunction(functionName) {
                 const response = await fetch(`/v1/invoke/${functionName}`, {
@@ -38,14 +81,51 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({})
                 });
-                const result = await response.text();
-                alert(result);
+
+                if (!response.body) {
+                    streamFunctionInfo('No response body', { type: 'warn' });
+                    return;
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let result = '';
+
+                const handleChunk = ({ done, value }) => {
+                    if (done) {
+                        return;
+                    }
+
+                    result += decoder.decode(value, { stream: true });
+                    streamFunctionInfo(result, { type: 'info' });
+
+                    reader.read().then(handleChunk).catch(error => {
+                        console.error('Stream reading error:', error);
+                        streamFunctionInfo('Error reading stream', { type: 'error' });
+                    });
+                };
+
+                reader.read().then(handleChunk).catch(error => {
+                    console.error('Stream reading error:', error);
+                    streamFunctionInfo('Error reading stream', { type: 'info' });
+                });
             }
+
+            function streamFunctionInfo(data, options) {
+                const { type } = options;
+                const outputElement = document.getElementById('output');
+                const p = document.createElement('p');
+                p.textContent = data;
+                p.className = `type-${type}`;
+                outputElement.appendChild(p);
+                outputElement.scrollTop = outputElement.scrollHeight;
+            }
+
 
             async function sendCustomBody() {
                 const functionName = prompt('Enter the function name to invoke:');
                 if (!functionName) {
-                    alert('Function name is required!');
+                    streamFunctionInfo('Function name is required!', { type: 'warn' });
                     return;
                 }
 
@@ -54,7 +134,7 @@
                 try {
                     bodyData = JSON.parse(bodyInput);
                 } catch (e) {
-                    alert('Invalid JSON format! Ensure you use double quotes for keys and string values.');
+                    streamFunctionInfo('Invalid JSON format! Ensure you use double quotes for keys and string values.', { type: 'warn' });
                     return;
                 }
 
@@ -64,7 +144,7 @@
                     body: JSON.stringify(bodyData)
                 });
                 const result = await response.text();
-                alert(result);
+                streamFunctionInfo(result, { type: 'info' });
             }
 
             async function deleteFunction(functionName) {
@@ -75,10 +155,10 @@
                     method: 'DELETE'
                 });
                 if (response.ok) {
-                    alert('Function deleted successfully');
+                    streamFunctionInfo('Function deleted successfully', { type: 'info' });
                     window.location.reload(); // Reload the page to update the list
                 } else {
-                    alert('Error deleting function');
+                    streamFunctionInfo('error deleting function', { type: 'error' });
                 }
             }
 
