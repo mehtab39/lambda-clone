@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const { fork } = require('child_process');
+const FunctionContext = require('./Entities/FunctionContext');
 
 const app = express();
 // Middleware to serve static files
@@ -53,7 +54,8 @@ app.get('/client/functions', async (req, res) => {
 });
 
 app.get('/client/upload', (req, res) => {
-    res.render('upload', { data: null });
+    const functionContext = new FunctionContext();
+    res.render('upload', { data: {functionContext} });
 });
 
 app.get('/client/update/:functionName', async (req, res) => {
@@ -61,11 +63,10 @@ app.get('/client/update/:functionName', async (req, res) => {
     const filePath = path.join(functionDirectory, `${functionName}.js`);
     try {
         const functionContent = await fs.promises.readFile(filePath, 'utf8');
-        const data = {
-            functionContent,
-            functionName,
-        }
-        res.render('upload', { data });
+        const functionContext = new FunctionContext(functionName, functionContent);
+        res.render('upload', { data: {
+            functionContext
+        } });
     } catch (err) {
         console.error('Error reading file:', err);
         res.status(500).send('Error reading file');

@@ -29,19 +29,23 @@
                 <legend>Write JavaScript Code</legend>
                 <label for="functionName">Function Name:</label>
                 <input type="text" id="functionName" name="functionName" placeholder="myFunction"
-                    value="<%= data.functionName || '' %>">
+                    value="<%= data.functionContext.name %>">
 
                 <label for="code">Function Code:</label>
                 <textarea id="code" name="code" rows="20" cols="80" spellcheck="false">
-                <%= data.functionContent || `
-                  /** * Lambda function boilerplate * @param {Object} event - The event object. * @param
-                    {Object} context - The context object. * @param {function} callback - The callback function. */
-                    module.exports=(event, context, callback)=> {
-                    callback(null, {
-                    statusCode: 200,
-                    body: JSON.stringify({ message: 'Function executed successfully!' }),
-                    });
-                    }
+                <%= data.functionContext.content || `
+/**
+ * Lambda function boilerplate
+ * @param {Object} event - The event object.
+ * @param {Object} context - The context object.
+ * @param {function} callback - The callback function.
+ */
+module.exports = (event, context, callback) => {
+  callback(null, {
+    statusCode: 200,
+    body: JSON.stringify({ message: "Hello world!"}),
+  });
+};
                  ` %>
 
                 </textarea>
@@ -68,9 +72,9 @@
                 }
             }
             requestAnimationFrame(() => {
-                 formatCode();
+                formatCode();
             }, 0);
-           
+
         </script>
 </body>
 
