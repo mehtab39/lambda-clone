@@ -56,6 +56,21 @@ app.get('/client/upload', (req, res) => {
     res.render('upload', { data: null });
 });
 
+app.get('/client/update/:functionName', async (req, res) => {
+    const { functionName } = req.params;
+    const filePath = path.join(functionDirectory, `${functionName}.js`);
+    try {
+        const functionContent = await fs.promises.readFile(filePath, 'utf8');
+        const data = {
+            functionContent,
+            functionName,
+        }
+        res.render('upload', { data });
+    } catch (err) {
+        console.error('Error reading file:', err);
+        res.status(500).send('Error reading file');
+    }
+});
 app.post('/v1/functions', upload.single('file'), (req, res) => {
     const functionName = req.body.functionName;
     const code = req.body.code;

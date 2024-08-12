@@ -2,86 +2,90 @@
 <html lang="en">
 
 <head>
-    <%- include('partials/head', {
-         title: "Serverless Functions"
-    }) %>
+    <%- include('partials/head', { title: "Serverless Functions" }) %>
 </head>
+
 <body>
     <%- include('partials/navigation') %>
 
-    <h1>Serverless Functions</h1>
-    <div id="functions-list">
-        <ul>
-            <% data.functions.forEach((item)=> { %>
-                <li>
-                    <span>
-                        <%= item %>
-                    </span>
-                    <div>
-                        <button onclick="invokeFunction('<%= item %>')">Run</button>
-                        <button onclick="deleteFunction('<%= item %>')">Delete</button>
-                    </div>
-                </li>
-                <% }); %>
-        </ul>
-    </div>
+        <h1>Serverless Functions</h1>
+        <div id="functions-list">
+            <ul>
+                <% data.functions.forEach((item)=> { %>
+                    <li>
+                        <span>
+                            <%= item %>
+                        </span>
+                        <div>
+                            <button onclick="invokeFunction('<%= item %>')">Run</button>
+                            <button onclick="editFunction('<%= item %>')">Edit</button>
+                            <button onclick="deleteFunction('<%= item %>')">Delete</button>
+                        </div>
+                    </li>
+                    <% }); %>
+            </ul>
+        </div>
 
-    <div class="input-container">
-        <textarea id="request-body" placeholder="Enter JSON body here..."></textarea>
-        <button onclick="sendCustomBody()">Send Request</button>
-    </div>
+        <div class="input-container">
+            <textarea id="request-body" placeholder="Enter JSON body here..."></textarea>
+            <button onclick="sendCustomBody()">Send Request</button>
+        </div>
 
-    <script>
-        async function invokeFunction(functionName) {
-            const response = await fetch(`/v1/invoke/${functionName}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
-            });
-            const result = await response.text();
-            alert(result);
-        }
-
-        async function sendCustomBody() {
-            const functionName = prompt('Enter the function name to invoke:');
-            if (!functionName) {
-                alert('Function name is required!');
-                return;
+        <script>
+            async function invokeFunction(functionName) {
+                const response = await fetch(`/v1/invoke/${functionName}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const result = await response.text();
+                alert(result);
             }
 
-            const bodyInput = document.getElementById('request-body').value;
-            let bodyData;
-            try {
-                bodyData = JSON.parse(bodyInput);
-            } catch (e) {
-                alert('Invalid JSON format! Ensure you use double quotes for keys and string values.');
-                return;
+            async function sendCustomBody() {
+                const functionName = prompt('Enter the function name to invoke:');
+                if (!functionName) {
+                    alert('Function name is required!');
+                    return;
+                }
+
+                const bodyInput = document.getElementById('request-body').value;
+                let bodyData;
+                try {
+                    bodyData = JSON.parse(bodyInput);
+                } catch (e) {
+                    alert('Invalid JSON format! Ensure you use double quotes for keys and string values.');
+                    return;
+                }
+
+                const response = await fetch(`/v1/invoke/${functionName}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bodyData)
+                });
+                const result = await response.text();
+                alert(result);
             }
 
-            const response = await fetch(`/v1/invoke/${functionName}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(bodyData)
-            });
-            const result = await response.text();
-            alert(result);
-        }
+            async function deleteFunction(functionName) {
+                const confirmDelete = confirm(`Are you sure you want to delete the function "${functionName}"?`);
+                if (!confirmDelete) return;
 
-        async function deleteFunction(functionName) {
-            const confirmDelete = confirm(`Are you sure you want to delete the function "${functionName}"?`);
-            if (!confirmDelete) return;
-
-            const response = await fetch(`/v1/functions/${functionName}`, {
-                method: 'DELETE'
-            });
-            if (response.ok) {
-                alert('Function deleted successfully');
-                window.location.reload(); // Reload the page to update the list
-            } else {
-                alert('Error deleting function');
+                const response = await fetch(`/v1/functions/${functionName}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    alert('Function deleted successfully');
+                    window.location.reload(); // Reload the page to update the list
+                } else {
+                    alert('Error deleting function');
+                }
             }
-        }
-    </script>
+
+            function editFunction(functionName) {
+                window.location.href = `../client/update/${functionName}`
+            }
+        </script>
 </body>
 
 </html>
