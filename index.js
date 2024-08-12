@@ -25,7 +25,7 @@ ensureDirectoryExists(functionDirectory);
 ensureDirectoryExists(uploadDirectory);
 
 
-app.get('/functions', (req, res) => {
+app.get('/v1/functions', (req, res) => {
     fs.readdir(functionDirectory, (err, files) => {
         if (err) return res.status(500).send('Error reading functions directory');
         const functions = files.map(file => path.basename(file, '.js'));
@@ -33,11 +33,11 @@ app.get('/functions', (req, res) => {
     });
 });
 
-app.get('/upload', (req, res) => {
+app.get('/v1/upload', (req, res) => {
     res.sendFile(path.join(__dirname, 'assets/upload.html'));
 });
 
-app.post('/functions', upload.single('file'), (req, res) => {
+app.post('/v1/functions', upload.single('file'), (req, res) => {
     const functionName = req.body.functionName;
     const code = req.body.code;
     const uploadedFile = req.file;
@@ -63,7 +63,7 @@ app.post('/functions', upload.single('file'), (req, res) => {
 });
 
 
-app.delete('/functions/:functionName', (req, res) => {
+app.delete('/v1/functions/:functionName', (req, res) => {
     const functionName = req.params.functionName;
     const filePath = path.join(functionDirectory, `${functionName}.js`);
 
@@ -75,32 +75,8 @@ app.delete('/functions/:functionName', (req, res) => {
     });
 });
 
-app.post('/invoke/:functionName', (req, res) => {
-    const functionName = req.params.functionName;
-    const functionPath = path.join(functionDirectory, `${functionName}.js`);
 
-    if (!fs.existsSync(functionPath)) return res.status(404).send('Function not found');
-
-    const func = require(functionPath);
-    const event = req.body.event || {};
-    const context = {
-        client_ip: req.ip
-    };
-    
-    try{
-        func(event, context, (err, result) => {
-            if (err) return res.status(500).send(err.message);
-            res.status(result.statusCode || 200).send(result.body || '');
-        });
-    }catch(err){
-        console.error('error [%s]', err.message);
-        res.status(505).send(err.message)
-    } 
-});
-
-
-
-app.post('/v2/invoke/:functionName', (req, res) => {
+app.post('/v1/invoke/:functionName', (req, res) => {
     const functionName = req.params.functionName;
     const functionPath = path.join(functionDirectory, `${functionName}.js`);
 
