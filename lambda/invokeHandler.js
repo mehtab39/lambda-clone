@@ -1,6 +1,7 @@
 const { fork } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const logger = require('../lib/logger');
 const functionDirectory = path.join(__dirname, '../functions');
 
 const activeProcesses = new Set();
@@ -13,6 +14,8 @@ const invokeHandler = (req, res) => {
         if (!fs.existsSync(functionPath)) {
             return res.status(404).send('Function not found');
         }
+
+        logger.debug(`Spawning child for function ${functionName}`)
 
         const child = fork(path.join(__dirname, 'functionRunner.js'), [], {
             env: { NODE_ENV: 'production' },
@@ -83,7 +86,7 @@ const invokeHandler = (req, res) => {
 
         child.send({ event, context, functionPath });
     } catch (err) {
-        console.log('Error serving /v1/invoke/:functionName', err.message);
+        logger.error('Error serving /v1/invoke/:functionName', err.message);
         if (!isResponseEnded) {
             res.status(500).send('Internal server error');
         }

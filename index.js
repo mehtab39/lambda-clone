@@ -5,6 +5,8 @@ const path = require('path');
 const multer = require('multer');;
 const FunctionContext = require('./Entities/FunctionContext');
 const lambda = require('./lambda/invokeHandler');
+const logger = require('./lib/logger');
+const requestLogger = require('./middlewares/log');
 
 const app = express();
 // Middleware to serve static files
@@ -14,6 +16,7 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.use(requestLogger);
 
 const functionDirectory = path.join(__dirname, 'functions');
 const uploadDirectory = path.join(__dirname, 'uploads');
@@ -119,5 +122,5 @@ app.post('/v1/invoke/:functionName', lambda.invokeHandler);
 
 
 app.listen(3000, () => {
-    console.log('Server running on port 3000');
+    logger.info('Server running on port 3000');
 });
