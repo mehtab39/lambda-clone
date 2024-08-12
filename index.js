@@ -7,7 +7,8 @@ const { fork } = require('child_process');
 
 const app = express();
 app.use(bodyParser.json());
-
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 const functionDirectory = path.join(__dirname, 'functions');
 const uploadDirectory = path.join(__dirname, 'uploads');
@@ -33,7 +34,23 @@ app.get('/v1/functions', (req, res) => {
     });
 });
 
-app.get('/v1/upload', (req, res) => {
+app.get('/client/functions', async (req, res) => {
+    try {
+        const files = await fs.promises.readdir(functionDirectory);
+        const functions = files.map(file => path.basename(file, '.js'));
+        let data = {
+            functions,
+            name: 'Akashdeep',
+            hobbies: ['playing football', 'playing chess', 'cycling']
+        }
+        res.render('functions', { data: data });
+    } catch (err) {
+        console.error('Error reading functions directory:', err);
+        res.status(500).send('Error reading functions directory');
+    }
+});
+
+app.get('/client/upload', (req, res) => {
     res.sendFile(path.join(__dirname, 'assets/upload.html'));
 });
 
