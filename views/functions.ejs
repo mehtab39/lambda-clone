@@ -18,6 +18,23 @@
             color: #333;
         }
 
+        .nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #007bff;
+            margin: 0 15px;
+            font-size: 16px;
+        }
+
+        .nav a:hover {
+            text-decoration: underline;
+        }
+
         #functions-list {
             max-width: 600px;
             margin: 0 auto;
@@ -77,6 +94,7 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             margin-bottom: 10px;
+            box-sizing: border-box;
         }
 
         .input-container button {
@@ -96,6 +114,11 @@
 </head>
 
 <body>
+    <div class="nav">
+        <a href="/client/functions">Functions List</a>
+        <a href="/client/upload">Upload Function</a>
+    </div>
+
     <h1>Serverless Functions</h1>
     <div id="functions-list">
         <ul>
@@ -104,7 +127,10 @@
                     <span>
                         <%= item %>
                     </span>
-                    <button onclick="invokeFunction('<%= item %>')">Run</button>
+                    <div>
+                        <button onclick="invokeFunction('<%= item %>')">Run</button>
+                        <button onclick="deleteFunction('<%= item %>')">Delete</button>
+                    </div>
                 </li>
                 <% }); %>
         </ul>
@@ -138,7 +164,7 @@
             try {
                 bodyData = JSON.parse(bodyInput);
             } catch (e) {
-                 alert('Invalid JSON format! Ensure you use double quotes for keys and string values.');
+                alert('Invalid JSON format! Ensure you use double quotes for keys and string values.');
                 return;
             }
 
@@ -149,6 +175,21 @@
             });
             const result = await response.text();
             alert(result);
+        }
+
+        async function deleteFunction(functionName) {
+            const confirmDelete = confirm(`Are you sure you want to delete the function "${functionName}"?`);
+            if (!confirmDelete) return;
+
+            const response = await fetch(`/v1/functions/${functionName}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                alert('Function deleted successfully');
+                window.location.reload(); // Reload the page to update the list
+            } else {
+                alert('Error deleting function');
+            }
         }
     </script>
 </body>

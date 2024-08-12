@@ -65,14 +65,14 @@ app.post('/v1/functions', upload.single('file'), (req, res) => {
 
         fs.rename(tempPath, targetPath, (err) => {
             if (err) return res.status(500).send('Error saving uploaded file');
-            res.send('Function uploaded successfully');
+            res.redirect('/client/functions');
         });
     } else if (functionName && code) {
         const filePath = path.join(functionDirectory, `${functionName}.js`);
 
         fs.writeFile(filePath, code, (err) => {
             if (err) return res.status(500).send('Error saving function code');
-            res.send('Function saved successfully');
+            res.redirect('/client/functions');
         });
     } else {
         res.status(400).send('Either a file or function code with name is required');
