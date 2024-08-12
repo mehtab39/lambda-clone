@@ -8,6 +8,8 @@ const lambda = require('./lambda/invokeHandler');
 const logger = require('./lib/logger');
 const requestLogger = require('./middlewares/log');
 const { ensureDirectoryExists } = require('./utils/files');
+const { expressMiddleware } = require('@apollo/server/express4');
+const { graphqlServer } = require('./graphql/index');
 
 const app = express();
 // Middleware to serve static files
@@ -18,6 +20,10 @@ app.use(bodyParser.json());
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(requestLogger);
+graphqlServer.start().then(() => {
+    app.use('/graphql', expressMiddleware(graphqlServer));
+});
+
 
 const functionDirectory = path.join(__dirname, 'functions');
 const uploadDirectory = path.join(__dirname, 'uploads');
