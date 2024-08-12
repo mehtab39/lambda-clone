@@ -6,6 +6,7 @@
         <style>
             textarea {
                 width: 100%;
+                height: max-content;
                 box-sizing: border-box;
             }
         </style>
@@ -32,7 +33,7 @@
                     value="<%= data.functionContext.name %>">
 
                 <label for="code">Function Code:</label>
-                <textarea id="code" name="code" rows="20" cols="80" spellcheck="false">
+                <textarea id="code" name="code" rows="40" cols="80" spellcheck="false">
                 <%= data.functionContext.content || `
 /**
  * Lambda function boilerplate
