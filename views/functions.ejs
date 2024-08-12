@@ -43,11 +43,12 @@
             }
         </style>
 
-
 </head>
 
 <body>
     <%- include('partials/navigation') %>
+
+        <div id="processCount">Loading...</div>
 
         <h1>Serverless Functions</h1>
         <div id="functions-list">
@@ -74,8 +75,9 @@
 
         <div id="output"></div>
 
-        <script>
+        <script>  
             async function invokeFunction(functionName) {
+                fetchAndUpdateProcessCountAfter(300);
                 const response = await fetch(`/v1/invoke/${functionName}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -93,6 +95,7 @@
 
                 const handleChunk = ({ done, value }) => {
                     if (done) {
+                        fetchAndUpdateProcessCountAfter(100);
                         return;
                     }
 
@@ -120,6 +123,26 @@
                 outputElement.appendChild(p);
                 outputElement.scrollTop = outputElement.scrollHeight;
             }
+
+            function updateProcessCount(count){
+                const processCountDiv = document.getElementById('processCount');
+                processCountDiv.textContent = `Running child processes: ${count}`;
+                processCountDiv = null;
+            }
+
+             function fetchProcessCount() {
+                    return fetch('/v1/active-processes')
+                        .then(response => response.json())
+                        .then(data => data.count);
+             }
+
+             function fetchAndUpdateProcessCountAfter(delay){
+                setTimeout(() => {
+                    fetchProcessCount().then(updateProcessCount)
+                }, delay);
+             }
+
+             fetchAndUpdateProcessCountAfter(0)
 
 
             async function sendCustomBody() {
@@ -165,7 +188,7 @@
             function editFunction(functionName) {
                 window.location.href = `../client/update/${functionName}`
             }
-        </script>
+             </script>
 </body>
 
 </html>

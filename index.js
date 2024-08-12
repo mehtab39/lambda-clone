@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');;
 const FunctionContext = require('./Entities/FunctionContext');
-const invokeHandler = require('./lambda/invokeHandler');
+const lambda = require('./lambda/invokeHandler');
 
 const app = express();
 // Middleware to serve static files
@@ -110,7 +110,12 @@ app.delete('/v1/functions/:functionName', (req, res) => {
     });
 });
 
-app.post('/v1/invoke/:functionName', invokeHandler);
+
+app.get('/v1/active-processes', (req, res) => {
+    res.json({ count: lambda.activeProcesses.size });
+});
+
+app.post('/v1/invoke/:functionName', lambda.invokeHandler);
 
 
 app.listen(3000, () => {

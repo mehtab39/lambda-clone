@@ -1,8 +1,9 @@
-// invokeHandler.js
 const { fork } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const functionDirectory = path.join(__dirname, '../functions');
+
+const activeProcesses = new Set();
 
 const invokeHandler = (req, res) => {
     try {
@@ -15,8 +16,10 @@ const invokeHandler = (req, res) => {
 
         const child = fork(path.join(__dirname, 'functionRunner.js'), [], {
             env: { NODE_ENV: 'production' },
-            stdio: ['pipe', 'pipe', 'pipe', 'ipc'] 
+            stdio: ['pipe', 'pipe', 'pipe', 'ipc']
         });
+
+        activeProcesses.add(child);
 
         const event = req.body.event || {};
         const context = { client_ip: req.ip };
@@ -74,6 +77,10 @@ const invokeHandler = (req, res) => {
             }
         });
 
+        child.on('exit', () => {
+            activeProcesses.delete(child);
+        });
+
         child.send({ event, context, functionPath });
     } catch (err) {
         console.log('Error serving /v1/invoke/:functionName', err.message);
@@ -83,4 +90,4 @@ const invokeHandler = (req, res) => {
     }
 };
 
-module.exports = invokeHandler;
+module.exports = { invokeHandler, activeProcesses };
