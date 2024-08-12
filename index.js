@@ -166,7 +166,8 @@ app.post('/v1/invoke/:functionName', (req, res) => {
 
         const timeout = setTimeout(() => {
             if (!isResponseEnded) {
-                res.status(504).send('Function execution timed out');
+                res.write(`ERROR: Function execution timeout\n`);
+                res.end();
                 isResponseEnded = true;
             }
             child.kill('SIGTERM');
