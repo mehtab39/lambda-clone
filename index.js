@@ -42,10 +42,8 @@ app.get('/client/functions', async (req, res) => {
     try {
         const files = await fs.promises.readdir(functionDirectory);
         const functions = files.map(file => path.basename(file, '.js'));
-        let data = {
+        const data = {
             functions,
-            name: 'Akashdeep',
-            hobbies: ['playing football', 'playing chess', 'cycling']
         }
         res.render('functions', { data: data });
     } catch (err) {
@@ -55,7 +53,7 @@ app.get('/client/functions', async (req, res) => {
 });
 
 app.get('/client/upload', (req, res) => {
-    res.sendFile(path.join(__dirname, 'assets/upload.html'));
+    res.render('upload', { data: null });
 });
 
 app.post('/v1/functions', upload.single('file'), (req, res) => {
