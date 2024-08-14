@@ -122,7 +122,7 @@ app.get('/v1/active-processes', (req, res) => {
 
 app.post('/v1/invoke/:functionName', lambda.invokeHandler);
 
-
-app.listen(3000, () => {
-    logger.info('Server running on port 3000');
+const PORT = 8000;
+app.listen(PORT, () => {
+    logger.info(`Server running on port ${PORT}`, {console: true});
 });
